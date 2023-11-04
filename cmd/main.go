@@ -28,5 +28,5 @@ func main() {
 	routes.PetRoutes(router)
 	routes.UserRoutes(router)
 
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS()(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowCredentials())(router)))
 }

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/luycaslima/virtual-pets-server/auth"
 	"github.com/luycaslima/virtual-pets-server/configs"
 	"github.com/luycaslima/virtual-pets-server/models"
 	"github.com/luycaslima/virtual-pets-server/responses"
@@ -17,7 +18,7 @@ import (
 
 var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users")
 
-func CreateAUser() http.HandlerFunc {
+func RegisterAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		var user models.User //Recieved user from JSON
@@ -25,43 +26,113 @@ func CreateAUser() http.HandlerFunc {
 
 		//validate request body
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			rw.WriteHeader(http.StatusBadRequest)
-			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
-			json.NewEncoder(rw).Encode(response)
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
 
 		//Use the validator to validate the required struct
 		if validationErr := validate.Struct(&user); validationErr != nil {
-			rw.WriteHeader(http.StatusBadRequest)
-			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": validationErr.Error()}}
-			json.NewEncoder(rw).Encode(response)
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": validationErr.Error()})
 			return
 		}
+
+		//TODO Understand better the hashFunction. why cost 14?
+		//Encrypt password
+		password, _ := auth.HashPassword(string(user.Password))
 
 		//Data to be sended to the server
 		newUser := models.User{
 			ID:       primitive.NewObjectID(),
 			Username: user.Username,
 			Email:    user.Email,
+			Password: password,
 			Pets:     make([]models.PetID, 0),
 			Vivarium: make([]models.VivariumID, 0),
 		}
 
 		result, err := userCollections.InsertOne(ctx, newUser)
 		if err != nil {
-			rw.WriteHeader(http.StatusInternalServerError)
-			response := responses.UserResponse{Status: http.StatusInternalServerError, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
-			json.NewEncoder(rw).Encode(response)
+			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
+			return
 		}
 
-		rw.WriteHeader(http.StatusCreated)
-		response := responses.UserResponse{Status: http.StatusCreated, Message: "success", Data: map[string]interface{}{"data": result}}
-		json.NewEncoder(rw).Encode(response)
+		responses.EncodeResponse(rw, http.StatusCreated, "success", map[string]interface{}{"data": result})
 	}
 }
 
-func GetAUser() http.HandlerFunc {
+func LoginAUser() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		var user models.Credentials
+		defer cancel()
+
+		//validate request body
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		//Use the validator to validate the required struct
+		if validationErr := validate.Struct(&user); validationErr != nil {
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": validationErr.Error()})
+			return
+		}
+
+		var foundedUser models.User
+		//Find Username
+		err := userCollections.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundedUser)
+		if err != nil {
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		//Check password
+		if isPasswordCorrect := auth.CheckPassword(user.Password, foundedUser.Password); !isPasswordCorrect {
+			responses.EncodeResponse(rw, http.StatusUnauthorized, "error", map[string]interface{}{"data": "wrong password"})
+			return
+		}
+
+		//return a created JWT TOKEN
+		token, expirationDate, err := auth.CreateJWT(foundedUser.ID.Hex())
+
+		if err != nil {
+			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		//Set cookie of the logged session
+		cookie := http.Cookie{
+			Name:     "jwt",
+			Value:    token,
+			Expires:  expirationDate,
+			HttpOnly: true, //to the frontend no have access
+		}
+
+		http.SetCookie(rw, &cookie)
+
+		//return cookie with jwt
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "Logged with success"})
+	}
+}
+
+//TODO have a renew token method
+
+func LogoutAUser() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		//Set cookie minus one hour to invalidate the session
+		cookie := http.Cookie{
+			Name:     "jwt",
+			Value:    "",
+			Expires:  time.Now().Add(-time.Hour),
+			HttpOnly: true,
+		}
+		http.SetCookie(rw, &cookie)
+
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "Logout successfuly!"})
+	}
+}
+
+func GetAUsersProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		var params = mux.Vars(r)
@@ -76,14 +147,11 @@ func GetAUser() http.HandlerFunc {
 		err := userCollections.FindOne(ctx, bson.M{"username": username}).Decode(&user)
 
 		if err != nil {
-			rw.WriteHeader(http.StatusBadRequest)
-			response := responses.UserResponse{Status: http.StatusBadRequest, Message: "error", Data: map[string]interface{}{"data": err.Error()}}
-			json.NewEncoder(rw).Encode(response)
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
-		rw.WriteHeader(http.StatusOK)
-		response := responses.UserResponse{Status: http.StatusOK, Message: "success", Data: map[string]interface{}{"user": user}}
-		json.NewEncoder(rw).Encode(response)
+
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user})
 	}
 }
 
@@ -94,12 +162,6 @@ func EditAUser() http.HandlerFunc {
 }
 
 func DeleteAUser() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-func CreateAPetToAUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

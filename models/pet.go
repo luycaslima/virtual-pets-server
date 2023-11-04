@@ -4,6 +4,10 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type PetID primitive.ObjectID
 
+// TODO for pets that are not owned
+type WildPet struct {
+}
+
 type Pet struct {
 	ID        primitive.ObjectID `json:"_id,omitempty"`
 	PetName   string             `json:"petName" validate:"required"`

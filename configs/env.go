@@ -8,7 +8,7 @@ import (
 )
 
 func GetEnvMongoURI() string {
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Couldn't  load the enviroment file variable !")
 	}
