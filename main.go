@@ -7,10 +7,21 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	"github.com/luycaslima/virtual-pets-server/configs"
+	_ "github.com/luycaslima/virtual-pets-server/docs"
 	"github.com/luycaslima/virtual-pets-server/routes"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// @title			Virtual Pets
+// @version		1.0
+// @description	This is the API for setting the REST functions of the Virtual Pets
+// @termsOfService	http://swagger.io/terms/
+// @contact.name	API Support
+// @contact.email	lucasl22l@proton.me
+// @host			localhost:8080
+// @BasePath		/
 func main() {
 	//TODO this is  to allow any origin (just for the moment)
 	//TODO STUDY CORS
@@ -27,6 +38,8 @@ func main() {
 	//Initialize routes
 	routes.PetRoutes(router)
 	routes.UserRoutes(router)
+
+	router.PathPrefix("/documentation/").Handler(httpSwagger.WrapHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowCredentials())(router)))
 }

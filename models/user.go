@@ -16,19 +16,21 @@ import (
 
 type UserID primitive.ObjectID
 
-// TODO when get the user profile not return with email nor the password
+// User represents the model  for an User's Data, password is ALWAYS HASHED
 type User struct {
-	ID       primitive.ObjectID `bson:"_id" json:"id,omitempty"`
-	Username string             `json:"username,omitempty" validate:"required"`
-	Email    string             `json:"email,omitempty" validate:"required"`
-	Password []byte             `json:"-" validate:"required"` //the - is for not be returned
-	Pets     []PetID            `json:"pets"`
+	ID       primitive.ObjectID `bson:"_id" json:"id,omitempty" example:"1"`
+	Username string             `json:"username,omitempty" validate:"required" example:"ronald123"`
+	Email    string             `json:"email,omitempty" validate:"required" example:"ronald@email.com"`
+	Password string             `json:"password" validate:"required" example:"aksdmalknj@154/JKNJ"`
+	Pets     []PetID            `json:"pets" `
 	Vivarium []VivariumID       `json:"vivarium"`
+	Money    int32              `json:"money" example:"500000"`
 	//Inventario
 	//Personagem aqui
 }
 
-type Credentials struct {
-	Username string `json:"username,omitempty" validate:"required"`
-	Password []byte `json:"password,omitempty" validate:"required"`
+// Credentials represent the body of Request of an User Loggin
+type UserCredentials struct {
+	Username string `json:"username,omitempty" validate:"required" example:"ronald123"`
+	Password string `json:"password,omitempty" validate:"required" example:"aksdmalknj@154/JKNJ"`
 }

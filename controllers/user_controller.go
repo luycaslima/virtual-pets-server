@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/luycaslima/virtual-pets-server/auth"
 	"github.com/luycaslima/virtual-pets-server/configs"
@@ -18,6 +20,16 @@ import (
 
 var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users")
 
+// RegisterAUser godoc
+//
+//	@Summary		Register a new User
+//	@Description	Register a new User with a Username, Email and Password
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		models.User	true	"Register a new User"
+//	@Success		201		{object}	models.User
+//	@Router			/users/register [post]
 func RegisterAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -48,6 +60,7 @@ func RegisterAUser() http.HandlerFunc {
 			Password: password,
 			Pets:     make([]models.PetID, 0),
 			Vivarium: make([]models.VivariumID, 0),
+			Money:    100,
 		}
 
 		result, err := userCollections.InsertOne(ctx, newUser)
@@ -63,7 +76,7 @@ func RegisterAUser() http.HandlerFunc {
 func LoginAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		var user models.Credentials
+		var user models.UserCredentials
 		defer cancel()
 
 		//validate request body
@@ -102,6 +115,7 @@ func LoginAUser() http.HandlerFunc {
 
 		//Set cookie of the logged session
 		cookie := http.Cookie{
+			SameSite: http.SameSiteNoneMode, //when the api and the site is on diferent DOMAINS
 			Name:     "jwt",
 			Value:    token,
 			Expires:  expirationDate,
@@ -155,7 +169,57 @@ func GetAUsersProfile() http.HandlerFunc {
 	}
 }
 
-func EditAUser() http.HandlerFunc {
+func CheckAuthenticatedUser() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+		defer cancel()
+		cookie, err := r.Cookie("jwt")
+
+		if err != nil {
+			if err == http.ErrNoCookie {
+				responses.EncodeResponse(rw, http.StatusUnauthorized, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		tknStr := cookie.Value
+
+		token, err := jwt.ParseWithClaims(tknStr, jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+		})
+
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				responses.EncodeResponse(rw, http.StatusUnauthorized, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+		}
+
+		if !token.Valid {
+			responses.EncodeResponse(rw, http.StatusUnauthorized, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		//Find the user by the jwt token
+		claims := token.Claims.(jwt.MapClaims)
+		var foundedUser models.User
+
+		//TODO DOT NOOT LET THIS UNCHECKED
+		issuer, _ := claims.GetIssuer()
+		userID, _ := primitive.ObjectIDFromHex(issuer)
+
+		userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
+
+		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"data": foundedUser})
+
+	}
+}
+
+func ChangePasswordOfAUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 	}

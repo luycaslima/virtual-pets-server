@@ -11,7 +11,5 @@ func UserRoutes(router *mux.Router) {
 	router.HandleFunc("/api/users/login", controllers.LoginAUser()).Methods("POST")
 	router.HandleFunc("/api/users/logout", controllers.LogoutAUser()).Methods("POST")
 	router.HandleFunc("/api/users/{username}", controllers.GetAUsersProfile()).Methods("GET")
-
-	//TODO check path
-	//router.HandleFunc("/api/users/user", controllers.GetLoggedUser()).Methods("GET")
+	router.HandleFunc("/api/users", controllers.CheckAuthenticatedUser()).Methods("GET")
 }
