@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -15,30 +16,65 @@ import (
 
 var petCollection *mongo.Collection = configs.GetCollection(configs.DB, "pets")
 
-// TODO this is for debug to test that only a LOGGED user can do this action
-func CreateAPetToAUser() http.HandlerFunc {
+func CreateAPet() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		var pet models.Pet
 		defer cancel()
 
 		issuer := issuerContext.JwtIssuer
-
 		var foundedUser models.User
+		var foundedSpecie models.Specie
+		var newPet models.Pet
+		//Validate body
+		err := json.NewDecoder(r.Body).Decode(&pet)
+		if err != nil {
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+		if validationErr := validate.Struct(&pet); validationErr != nil {
+			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": validationErr.Error()})
+		}
 
-		//TODO DOT NOT LET THIS UNCHECKED
+		//Check if the user exists
 		userID, _ := primitive.ObjectIDFromHex(issuer)
-		err := userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
+		err = userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
 
 		//Check if the user from the issuer exists
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+		}
+
+		//Check if the specie exists
+		err = speciesCollection.FindOne(ctx, bson.M{"_id": pet.SpecieID}).Decode(&foundedSpecie)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
 				return
 			}
 		}
-		responses.EncodeResponse(rw, http.StatusCreated, "success", map[string]interface{}{"data": userID})
 
+		newPet = models.Pet{
+			ID:       primitive.NewObjectID(),
+			PetName:  pet.PetName,
+			SpecieID: pet.SpecieID,
+			OwnerID:  models.UserID(userID),
+			Status:   foundedSpecie.BaseStatus,
+			Birthday: time.Now().String(),
+			//Add techniques
+		}
+
+		_, err = petCollection.InsertOne(ctx, newPet)
+		if err != nil {
+			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		responses.EncodeResponse(rw, http.StatusCreated, "success", map[string]interface{}{"data": newPet.ID})
 	}
 }
 

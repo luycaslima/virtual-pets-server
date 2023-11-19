@@ -7,5 +7,5 @@ import (
 )
 
 func PetRoutes(router *mux.Router) {
-	router.HandleFunc("/api/pet/", auth.ValidateJWT(controllers.CreateAPetToAUser())).Methods("POST")
+	router.HandleFunc("/api/pets", auth.ValidateJWT(controllers.CreateAPet())).Methods("POST")
 }

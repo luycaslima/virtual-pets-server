@@ -28,8 +28,8 @@ func CreateJWT(userID string) (string, time.Time, error) {
 	return tokenStr, expiration, err
 }
 
-// This is passed in the routes with the function that need jwt validation as parameter
 // TODO passing the issuer as a context is safe?
+// This is passed in the routes with the function that need jwt validation as parameter
 func ValidateJWT(next http.Handler) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 

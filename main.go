@@ -36,6 +36,7 @@ func main() {
 	configs.ConnectDB()
 
 	//Initialize routes
+	routes.SpeciesRoutes(router)
 	routes.PetRoutes(router)
 	routes.UserRoutes(router)
 

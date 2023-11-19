@@ -4,16 +4,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-	What a user can do?
-	* Log in / Logout
-	* Access the functions of the game
-		*Edit,Create and set pets in the Vivarium
-		*Create a pet or catch it
-		*All actions with the pet
-		* ALL FUNCTIONS IN GAME
-*/
-
 type UserID primitive.ObjectID
 
 // User represents the model  for an User's Data, password is ALWAYS HASHED
@@ -33,4 +23,14 @@ type User struct {
 type UserCredentials struct {
 	Username string `json:"username,omitempty" validate:"required" example:"ronald123"`
 	Password string `json:"password,omitempty" validate:"required" example:"aksdmalknj@154/JKNJ"`
+}
+
+func (user *User) AddPet(petID PetID) []PetID {
+	user.Pets = append(user.Pets, petID)
+	return user.Pets
+}
+
+func (user *User) AddVivarium(vivariumID VivariumID) []VivariumID {
+	user.Vivarium = append(user.Vivarium, vivariumID)
+	return user.Vivarium
 }

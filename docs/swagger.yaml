@@ -30,21 +30,79 @@ definitions:
     - password
     - username
     type: object
+  models.UserCredentials:
+    properties:
+      password:
+        example: aksdmalknj@154/JKNJ
+        type: string
+      username:
+        example: ronald123
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  responses.Response:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
     email: lucasl22l@proton.me
     name: API Support
-  description: This is the API for setting functions of the Vitrutalpets
+  description: This is the API for setting the REST functions of the Virtual Pets
   termsOfService: http://swagger.io/terms/
   title: Virtual Pets
   version: "1.0"
 paths:
-  /users/register:
+  /api/users/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a  User with a Username and Password
+      operationId: login-a-user
+      parameters:
+      - description: Logs an User
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged User
+          schema:
+            $ref: '#/definitions/responses.Response'
+        "400":
+          description: Invalid body
+          schema:
+            $ref: '#/definitions/responses.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/responses.Response'
+        "500":
+          description: Failure in the Database
+          schema:
+            $ref: '#/definitions/responses.Response'
+      summary: Login a  User
+      tags:
+      - users
+  /api/users/register:
     post:
       consumes:
       - application/json
       description: Register a new User with a Username, Email and Password
+      operationId: register-a-user
       parameters:
       - description: Register a new User
         in: body
@@ -56,9 +114,17 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: User Created!
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/responses.Response'
+        "400":
+          description: Invalid Body
+          schema:
+            $ref: '#/definitions/responses.Response'
+        "500":
+          description: Failure in the Database
+          schema:
+            $ref: '#/definitions/responses.Response'
       summary: Register a new User
       tags:
       - users

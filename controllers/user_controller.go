@@ -20,16 +20,19 @@ import (
 
 var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users")
 
-// RegisterAUser godoc
+// RegisterAUser example
 //
 //	@Summary		Register a new User
 //	@Description	Register a new User with a Username, Email and Password
+//	@ID				register-a-user
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		models.User	true	"Register a new User"
-//	@Success		201		{object}	models.User
-//	@Router			/users/register [post]
+//	@Param			user	body		models.User			true	"Register a new User"
+//	@Success		201		{object}	responses.Response	"User Created!"
+//	@Failure		400		{object}	responses.Response	"Invalid Body"
+//	@Failure		500		{object}	responses.Response	"Failure in the Database"
+//	@Router			/api/users/register [post]
 func RegisterAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -48,6 +51,7 @@ func RegisterAUser() http.HandlerFunc {
 			return
 		}
 
+		//TODO check if the username exist or the email is being used
 		//TODO Understand better the hashFunction. why cost 14?
 		//Encrypt password
 		password, _ := auth.HashPassword(string(user.Password))
@@ -63,16 +67,30 @@ func RegisterAUser() http.HandlerFunc {
 			Money:    100,
 		}
 
-		result, err := userCollections.InsertOne(ctx, newUser)
+		_, err := userCollections.InsertOne(ctx, newUser)
 		if err != nil {
 			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusCreated, "success", map[string]interface{}{"data": result})
+		responses.EncodeResponse(rw, http.StatusCreated, "success", map[string]interface{}{"data": "User created!"})
 	}
 }
 
+// LoginAUser example
+//
+//	@Summary		Login a  User
+//	@Description	Login a  User with a Username and Password
+//	@ID				login-a-user
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		models.UserCredentials	true	"Logs an User"
+//	@Success		200		{object}	responses.Response		"Logged User and return JWT cookie"
+//	@Failure		400		{object}	responses.Response		"Invalid body"
+//	@Failure		404		{object}	responses.Response		"User not found"
+//	@Failure		500		{object}	responses.Response		"Failure in the Database"
+//	@Router			/api/users/login [post]
 func LoginAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -92,10 +110,11 @@ func LoginAUser() http.HandlerFunc {
 		}
 
 		var foundedUser models.User
+
 		//Find Username
 		err := userCollections.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundedUser)
 		if err != nil {
-			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
 
@@ -161,7 +180,7 @@ func GetAUsersProfile() http.HandlerFunc {
 		err := userCollections.FindOne(ctx, bson.M{"username": username}).Decode(&user)
 
 		if err != nil {
-			responses.EncodeResponse(rw, http.StatusBadRequest, "error", map[string]interface{}{"data": err.Error()})
+			responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
 
@@ -169,10 +188,55 @@ func GetAUsersProfile() http.HandlerFunc {
 	}
 }
 
+func LinkAPetToAUser() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		params := mux.Vars(r)
+		petID := params["petID"]
+		defer cancel()
+
+		issuer := issuerContext.JwtIssuer
+		var foundedUser models.User
+		var foundedPet models.Pet
+
+		//TODO DOT NOT LET THIS UNCHECKED
+		userID, _ := primitive.ObjectIDFromHex(issuer)
+		err := userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
+		//Check if the user from the issuer exists
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+		}
+
+		//Check if the pet exists
+		err = petCollection.FindOne(ctx, bson.M{"_id": petID}).Decode(&foundedPet)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+		}
+
+		//err = petCollection.FindOne(ctx, bson.M{"_id": petID})
+		petIDPrimitive, _ := primitive.ObjectIDFromHex(petID)
+		foundedUser.AddPet(models.PetID(petIDPrimitive))
+
+		_, err = userCollections.UpdateByID(ctx, userID, foundedUser)
+		if err != nil {
+			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
+			return
+		}
+
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "pet linked with owner!"})
+	}
+}
+
 func CheckAuthenticatedUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-
 		defer cancel()
 		cookie, err := r.Cookie("jwt")
 

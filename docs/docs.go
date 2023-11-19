@@ -19,7 +19,60 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users/register": {
+        "/api/users/login": {
+            "post": {
+                "description": "Login a  User with a Username and Password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Login a  User",
+                "operationId": "login-a-user",
+                "parameters": [
+                    {
+                        "description": "Logs an User",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserCredentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Logged User",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure in the Database",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/register": {
             "post": {
                 "description": "Register a new User with a Username, Email and Password",
                 "consumes": [
@@ -32,6 +85,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Register a new User",
+                "operationId": "register-a-user",
                 "parameters": [
                     {
                         "description": "Register a new User",
@@ -45,9 +99,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "User Created!",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Body",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure in the Database",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
                         }
                     }
                 }
@@ -96,6 +162,38 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "models.UserCredentials": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "aksdmalknj@154/JKNJ"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ronald123"
+                }
+            }
+        },
+        "responses.Response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
         }
     }
 }`
@@ -107,7 +205,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Virtual Pets",
-	Description:      "This is the API for setting functions of the Vitrutalpets",
+	Description:      "This is the API for setting the REST functions of the Virtual Pets",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
