@@ -62,8 +62,8 @@ func RegisterAUser() http.HandlerFunc {
 			Username: user.Username,
 			Email:    user.Email,
 			Password: password,
-			Pets:     make([]models.PetID, 0),
-			Vivarium: make([]models.VivariumID, 0),
+			Pets:     make([]primitive.ObjectID, 0),
+			Vivarium: make([]primitive.ObjectID, 0),
 			Money:    100,
 		}
 
@@ -165,7 +165,7 @@ func LogoutAUser() http.HandlerFunc {
 	}
 }
 
-func GetAUsersProfile() http.HandlerFunc {
+func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		var params = mux.Vars(r)
@@ -184,14 +184,14 @@ func GetAUsersProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user})
+		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user})
 	}
 }
 
 func LinkAPetToAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 		params := mux.Vars(r)
 		petID := params["petID"]
 		defer cancel()
@@ -203,7 +203,7 @@ func LinkAPetToAUser() http.HandlerFunc {
 		//TODO DOT NOT LET THIS UNCHECKED
 		userID, _ := primitive.ObjectIDFromHex(issuer)
 		err := userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
-		//Check if the user from the issuer exists
+		//Check if the user from the issuer jwt exists
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
@@ -211,26 +211,30 @@ func LinkAPetToAUser() http.HandlerFunc {
 			}
 		}
 
-		//Check if the pet exists
-		err = petCollection.FindOne(ctx, bson.M{"_id": petID}).Decode(&foundedPet)
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
-				return
-			}
-		}
-
-		//err = petCollection.FindOne(ctx, bson.M{"_id": petID})
 		petIDPrimitive, _ := primitive.ObjectIDFromHex(petID)
-		foundedUser.AddPet(models.PetID(petIDPrimitive))
+		//Check if the pet exists
+		err = petCollection.FindOne(ctx, bson.M{"_id": petIDPrimitive}).Decode(&foundedPet)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				responses.EncodeResponse(rw, http.StatusNotFound, "error", map[string]interface{}{"data": err.Error()})
+				return
+			}
+		}
+		//CHECK IF IT HAS ONE OWNER ALREADzY
+		if foundedPet.OwnerID != userID {
+			responses.EncodeResponse(rw, http.StatusUnauthorized, "error", map[string]interface{}{"data": "This pet has other owner!"})
+			return
+		}
 
-		_, err = userCollections.UpdateByID(ctx, userID, foundedUser)
+		foundedUser.AddPet(petIDPrimitive)
+		_, err = userCollections.UpdateByID(ctx, userID, bson.M{"$set": bson.M{"pets": foundedUser.Pets}})
+		// println(foundedUser.Pets)
 		if err != nil {
 			responses.EncodeResponse(rw, http.StatusInternalServerError, "error", map[string]interface{}{"data": err.Error()})
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "pet linked with owner!"})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser})
 	}
 }
 

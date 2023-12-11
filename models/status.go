@@ -10,10 +10,10 @@ type Agility Atributte
 type Intelligence Atributte
 
 type Status struct {
-	Strength     `json:"strength" default:"5"`
-	Life         `json:"life" default:"5"`
-	Defense      `json:"defense" default:"5"`
-	Skill        `json:"skill" default:"5"`
-	Agility      `json:"agility" default:"5"`
-	Intelligence `json:"intelligence" default:"5"`
+	Strength     `json:"strength,omitempty" default:"0"`
+	Life         `json:"life,omitempty" default:"0"`
+	Defense      `json:"defense,omitempty" default:"0"`
+	Skill        `json:"skill,omitempty" default:"0"`
+	Agility      `json:"agility,omitempty" default:"0"`
+	Intelligence `json:"intelligence,omitempty" default:"0"`
 }

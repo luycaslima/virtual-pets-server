@@ -21,6 +21,6 @@ const (
 // }
 
 type TechniqueAndRequirement struct {
-	Technique    string //TODO change to an id from the technique
-	Requirements []Atributte
+	Technique    string `json:"techniqueName" validate:"required"` //TODO change to an id from the technique
+	Requirements Status `json:"requirements" validate:"required"`
 }

@@ -59,12 +59,15 @@ func CreateAPet() http.HandlerFunc {
 		}
 
 		newPet = models.Pet{
-			ID:       primitive.NewObjectID(),
-			PetName:  pet.PetName,
-			SpecieID: pet.SpecieID,
-			OwnerID:  models.UserID(userID),
-			Status:   foundedSpecie.BaseStatus,
-			Birthday: time.Now().String(),
+			ID:        primitive.NewObjectID(),
+			PetName:   pet.PetName,
+			SpecieID:  pet.SpecieID,
+			OwnerID:   userID,
+			Status:    foundedSpecie.BaseStatus,
+			Birthday:  time.Now().String(),
+			Happiness: 100,
+			Hunger:    0,
+			Cleanness: 100,
 			//Add techniques
 		}
 
