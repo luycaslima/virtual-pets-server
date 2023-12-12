@@ -3,15 +3,16 @@ package configs
 import (
 	"context"
 	"log"
-	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func ConnectDB() *mongo.Client {
-	ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
-	defer cancel()
+	//TODO with for some reason not connect it was 2 not 10
+	ctx := context.TODO()
+	//context.WithTimeout(context.TODO(), 2*time.Second)
+	//defer cancel()
 
 	//create a client connecting to the database by the .env URI
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(GetEnvMongoURI()))

@@ -148,8 +148,7 @@ func LoginAUser() http.HandlerFunc {
 	}
 }
 
-//TODO have a renew token method
-
+// TODO have a renew token method
 func LogoutAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		//Set cookie minus one hour to invalidate the session
@@ -184,7 +183,7 @@ func GetAUserProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user})
+		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user.GetUserProfile()})
 	}
 }
 
