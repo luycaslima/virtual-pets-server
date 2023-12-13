@@ -167,7 +167,7 @@ func LogoutAUser() http.HandlerFunc {
 // TODO create a Struct for user profile
 func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		var params = mux.Vars(r)
 		//userID := params["userID"]
 		username := params["username"]
@@ -184,7 +184,7 @@ func GetAUserProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user.GetUserProfile()})
+		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user})
 	}
 }
 
