@@ -35,7 +35,7 @@ var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users
 //	@Router			/api/users/register [post]
 func RegisterAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var user models.User //Recieved user from JSON
 		defer cancel()
 
@@ -93,7 +93,7 @@ func RegisterAUser() http.HandlerFunc {
 //	@Router			/api/users/login [post]
 func LoginAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var user models.UserCredentials
 		defer cancel()
 
@@ -144,7 +144,7 @@ func LoginAUser() http.HandlerFunc {
 		http.SetCookie(rw, &cookie)
 
 		//return cookie with jwt
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "Logged with success"})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser.GetUserProfile()})
 	}
 }
 
@@ -167,7 +167,7 @@ func LogoutAUser() http.HandlerFunc {
 // TODO create a Struct for user profile
 func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var params = mux.Vars(r)
 		//userID := params["userID"]
 		username := params["username"]
@@ -184,7 +184,7 @@ func GetAUserProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user.GetUserProfile()})
 	}
 }
 
@@ -240,7 +240,7 @@ func LinkAPetToAUser() http.HandlerFunc {
 
 func CheckAuthenticatedUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 		cookie, err := r.Cookie("jwt")
 

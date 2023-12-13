@@ -33,7 +33,7 @@ func main() {
 	headers := handlers.AllowedHeaders([]string{"Origin, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization,X-Requested-With"})
 	exposedHeader := handlers.ExposedHeaders([]string{"Origin"})
 	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE,OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"*"}) //virtualpets.vercel.app but and the localhost?
+	origins := handlers.AllowedOrigins([]string{"*"}) //TODO put this on production virtualpets.vercel.app but and the localhost?
 
 	//maxAge := handlers.MaxAge(12)
 	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
