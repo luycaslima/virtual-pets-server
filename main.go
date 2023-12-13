@@ -28,13 +28,13 @@ func main() {
 	//https://stackoverflow.com/questions/40985920/making-golang-gorilla-cors-handler-work
 	//https://dev.to/evillord666/auto-cors-preflight-handle-wih-gorillamux-and-go-855
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
-	credentials := handlers.AllowCredentials()
+	//credentials := handlers.AllowCredentials()
 
-	headers := handlers.AllowedHeaders([]string{"Origin", "Content-Type", "X-Requested-With", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"})
+	//headers := handlers.AllowedHeaders([]string{"Origin", "Content-Type", "X-Requested-With", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"})
 	//maxAge := handlers.MaxAge(12)
-	exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
-	origins := handlers.AllowedOrigins([]string{"*"})
-	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
+	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
+	//origins := handlers.AllowedOrigins([]string{"*"})
+	//methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
 	router := mux.NewRouter()
 	//run database
 	fmt.Println("Connecting Database")
@@ -49,5 +49,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(origins, credentials, headers, exposedHeaders, methods)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS()(router)))
 }
