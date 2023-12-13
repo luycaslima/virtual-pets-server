@@ -93,7 +93,7 @@ func RegisterAUser() http.HandlerFunc {
 //	@Router			/api/users/login [post]
 func LoginAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 		var user models.UserCredentials
 		defer cancel()
 
@@ -167,7 +167,7 @@ func LogoutAUser() http.HandlerFunc {
 // TODO create a Struct for user profile
 func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 		var params = mux.Vars(r)
 		//userID := params["userID"]
 		username := params["username"]
@@ -184,14 +184,14 @@ func GetAUserProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"user": user})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user})
 	}
 }
 
 func LinkAPetToAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
 		params := mux.Vars(r)
 		petID := params["petID"]
 		defer cancel()
@@ -240,7 +240,7 @@ func LinkAPetToAUser() http.HandlerFunc {
 
 func CheckAuthenticatedUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 		defer cancel()
 		cookie, err := r.Cookie("jwt")
 
@@ -282,7 +282,7 @@ func CheckAuthenticatedUser() http.HandlerFunc {
 
 		userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
 
-		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"data": foundedUser})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser})
 
 	}
 }
