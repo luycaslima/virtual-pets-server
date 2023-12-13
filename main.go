@@ -33,7 +33,7 @@ func main() {
 	headers := handlers.AllowedHeaders([]string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"})
 	maxAge := handlers.MaxAge(12)
 	exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
-	origins := handlers.AllowedOrigins([]string{"http://127.0.0.1:*"})
+	origins := handlers.AllowedOrigins([]string{"*"})
 	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
 	router := mux.NewRouter()
 	//run database
