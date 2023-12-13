@@ -164,6 +164,7 @@ func LogoutAUser() http.HandlerFunc {
 	}
 }
 
+// TODO create a Struct for user profile
 func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
