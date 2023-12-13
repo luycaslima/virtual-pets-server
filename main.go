@@ -29,7 +29,8 @@ func main() {
 	//https://dev.to/evillord666/auto-cors-preflight-handle-wih-gorillamux-and-go-855
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
 	credentails := handlers.AllowCredentials()
-	origins := handlers.AllowedOrigins([]string{"*"})
+
+	origins := handlers.AllowedOrigins([]string{ /*"*"*/ "http://localhost:5000/"})
 
 	router := mux.NewRouter()
 
