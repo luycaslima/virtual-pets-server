@@ -28,10 +28,10 @@ func main() {
 	//https://stackoverflow.com/questions/40985920/making-golang-gorilla-cors-handler-work
 	//https://dev.to/evillord666/auto-cors-preflight-handle-wih-gorillamux-and-go-855
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
-	credentails := handlers.AllowCredentials()
+	//credentails := handlers.AllowCredentials()
 
-	origins := handlers.AllowedOrigins([]string{ /*"*"*/ "http://localhost:5000/"})
-
+	origins := handlers.AllowedOrigins([]string{"*"})
+	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
 	router := mux.NewRouter()
 
 	//run database
@@ -47,5 +47,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(credentails, origins)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS( /*credentails,*/ methods, origins)(router)))
 }
