@@ -30,11 +30,14 @@ func main() {
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
 	//credentials := handlers.AllowCredentials()
 
-	//headers := handlers.AllowedHeaders([]string{"Origin", "Content-Type", "X-Requested-With", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"})
+	headers := handlers.AllowedHeaders([]string{"Origin, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization,X-Requested-With"})
+	exposedHeader := handlers.ExposedHeaders([]string{"Origin"})
+	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE,OPTIONS"})
+	origins := handlers.AllowedOrigins([]string{"*"}) //virtualpets.vercel.app but and the localhost?
+
 	//maxAge := handlers.MaxAge(12)
 	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
-	//origins := handlers.AllowedOrigins([]string{"*"})
-	//methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
+
 	router := mux.NewRouter()
 	//run database
 	fmt.Println("Connecting Database")
@@ -49,5 +52,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS()(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, origins)(router)))
 }
