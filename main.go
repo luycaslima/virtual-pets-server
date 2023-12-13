@@ -30,10 +30,12 @@ func main() {
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
 	credentails := handlers.AllowCredentials()
 
-	origins := handlers.AllowedOrigins([]string{"http://127.0.0.1:5000"})
+	headers := handlers.AllowedHeaders([]string{"Origin", "Content-Type", "Authorization", "Accept", "User-Agent", "Cache-Control", "Pragma"})
+	maxAge := handlers.MaxAge(12)
+	exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
+	origins := handlers.AllowedOrigins([]string{"http://127.0.0.1:*"})
 	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE"})
 	router := mux.NewRouter()
-
 	//run database
 	fmt.Println("Connecting Database")
 	configs.ConnectDB()
@@ -47,5 +49,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(credentails, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(credentails, headers, maxAge, exposedHeaders, methods, origins)(router)))
 }
