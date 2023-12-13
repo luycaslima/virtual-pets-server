@@ -35,7 +35,7 @@ var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users
 //	@Router			/api/users/register [post]
 func RegisterAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		var user models.User //Recieved user from JSON
 		defer cancel()
 
@@ -93,7 +93,7 @@ func RegisterAUser() http.HandlerFunc {
 //	@Router			/api/users/login [post]
 func LoginAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		var user models.UserCredentials
 		defer cancel()
 
@@ -167,7 +167,7 @@ func LogoutAUser() http.HandlerFunc {
 // TODO create a Struct for user profile
 func GetAUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		var params = mux.Vars(r)
 		//userID := params["userID"]
 		username := params["username"]
