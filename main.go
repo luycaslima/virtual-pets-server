@@ -34,7 +34,7 @@ func main() {
 	exposedHeader := handlers.ExposedHeaders([]string{"Origin"})
 	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE,OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"}) //TODO put this on production virtualpets.vercel.app but and the localhost?
-
+	cacheMaxAge := handlers.MaxAge(600)
 	//maxAge := handlers.MaxAge(12)
 	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
 
@@ -52,5 +52,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, origins)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, cacheMaxAge, origins)(router)))
 }
