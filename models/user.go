@@ -28,11 +28,13 @@ type UserCredentials struct {
 	Password string `json:"password,omitempty" validate:"required" example:"aksdmalknj@154/JKNJ"`
 }
 
-func (user *User) GetUserProfile() map[string]interface{} {
+func (user *User) GetUserDetails() map[string]interface{} {
 	return map[string]interface{}{
 		"username": user.Username,
 		"pets":     user.Pets,
 		"vivarium": user.Vivarium,
+		"money":    user.Money,
+		"email":    user.Email,
 	}
 }
 

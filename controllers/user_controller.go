@@ -144,7 +144,7 @@ func LoginAUser() http.HandlerFunc {
 		http.SetCookie(rw, &cookie)
 
 		//return cookie with jwt
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser.GetUserProfile()})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser.GetUserDetails()})
 	}
 }
 
@@ -184,7 +184,7 @@ func GetAUserProfile() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user.GetUserProfile()})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"user": user.GetUserDetails()})
 	}
 }
 
@@ -234,7 +234,7 @@ func LinkAPetToAUser() http.HandlerFunc {
 			return
 		}
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": "Linked successfuly"})
 	}
 }
 
@@ -282,7 +282,7 @@ func CheckAuthenticatedUser() http.HandlerFunc {
 
 		userCollections.FindOne(ctx, bson.M{"_id": userID}).Decode(&foundedUser)
 
-		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": foundedUser.GetUserDetails()})
 
 	}
 }

@@ -90,7 +90,7 @@ func GetBabyFormSpecies() http.HandlerFunc {
 		//Close the cursor once finished
 		cursor.Close(context.TODO())
 
-		responses.EncodeResponse(rw, http.StatusFound, "success", map[string]interface{}{"data": results})
+		responses.EncodeResponse(rw, http.StatusOK, "success", map[string]interface{}{"data": results})
 	}
 
 }

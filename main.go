@@ -26,7 +26,7 @@ func main() {
 	//TODO this is  to allow any origin (just for the moment)
 	//TODO STUDY CORS
 	//https://stackoverflow.com/questions/40985920/making-golang-gorilla-cors-handler-work
-	//https://dev.to/evillord666/auto-cors-preflight-handle-wih-gorillamux-and-go-855
+	//https://github.com/gofiber/fiber/issues/1411#issuecomment-869518111
 	//corsObj := handlers.AllowedOrigins([]string{"*"})
 	//credentials := handlers.AllowCredentials()
 
