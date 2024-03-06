@@ -8,8 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Connect to the Database
 func ConnectDB() *mongo.Client {
-	//TODO with for some reason not connect it was 2 not 10
 	ctx := context.TODO()
 	//context.WithTimeout(context.TODO(), 2*time.Second)
 	//defer cancel()

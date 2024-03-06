@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/luycaslima/virtual-pets-server/auth"
 	"github.com/luycaslima/virtual-pets-server/configs"
@@ -20,20 +18,20 @@ import (
 
 var userCollections *mongo.Collection = configs.GetCollection(configs.DB, "users")
 
-// RegisterAUser example
+// RegisterAnUser example
 //
 //	@Summary		Register a new User
 //	@Description	Register a new User with a Username, Email and Password
 //	@ID				register-a-user
-//	@Tags			users
+//	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		models.User			true	"Register a new User"
+//	@Param			user	body		models.RegisterAnUserBody	true	"Register a new User"
 //	@Success		201		{object}	responses.Response	"User Created!"
 //	@Failure		400		{object}	responses.Response	"Invalid Body"
 //	@Failure		500		{object}	responses.Response	"Failure in the Database"
 //	@Router			/api/users/register [post]
-func RegisterAUser() http.HandlerFunc {
+func RegisterAnUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var user models.User //Recieved user from JSON
@@ -53,6 +51,7 @@ func RegisterAUser() http.HandlerFunc {
 
 		//TODO check if the username exist or the email is being used
 		//TODO Understand better the hashFunction. why cost 14?
+
 		//Encrypt password
 		password, _ := auth.HashPassword(string(user.Password))
 
@@ -77,12 +76,12 @@ func RegisterAUser() http.HandlerFunc {
 	}
 }
 
-// LoginAUser example
+// LoginAnUser example
 //
-//	@Summary		Login a  User
-//	@Description	Login a  User with a Username and Password
-//	@ID				login-a-user
-//	@Tags			users
+//	@Summary		Login an User
+//	@Description	Login an User with a Username and Password
+//	@ID				login-an-user
+//	@Tags			User
 //	@Accept			json
 //	@Produce		json
 //	@Param			user	body		models.UserCredentials	true	"Logs an User"
@@ -91,7 +90,7 @@ func RegisterAUser() http.HandlerFunc {
 //	@Failure		404		{object}	responses.Response		"User not found"
 //	@Failure		500		{object}	responses.Response		"Failure in the Database"
 //	@Router			/api/users/login [post]
-func LoginAUser() http.HandlerFunc {
+func LoginAnUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var user models.UserCredentials
@@ -149,7 +148,18 @@ func LoginAUser() http.HandlerFunc {
 }
 
 // TODO have a renew token method
-func LogoutAUser() http.HandlerFunc {
+
+// LogoutAnUser example
+//
+//	@Summary		Logout an User
+//	@Description	Logout current logged in user by expiring his Jwt auth
+//	@ID				logout-an-user
+//	@Tags			User
+//	@Produce		json
+//	@Success		200		{object}	responses.Response		"Logout successfuly!"
+//	@Failure		500		{object}	responses.Response		"Failure on the Server"
+//	@Router			/api/users/logout [post]
+func LogoutAnUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		//Set cookie minus one hour to invalidate the session
 		cookie := http.Cookie{
@@ -165,7 +175,20 @@ func LogoutAUser() http.HandlerFunc {
 }
 
 // TODO create a Struct for user profile
-func GetAUserProfile() http.HandlerFunc {
+
+// GetAnUserProfile example
+//
+//		@Summary		Get an User Details (Profile)
+//		@Description	Receives Details from a specific User (without password)
+//		@ID				get-an-user-profile
+//		@Tags			User
+//		@Param        	username   path  	string true  "User's name"
+//		@Produce		json
+//		@Success		200		{object}	models.User				"User Details"
+//	 	@Failure		404		{object}	responses.Response		"User not found"
+//		@Failure		500		{object}	responses.Response		"Failure on the Server"
+//		@Router			/api/users/{username} [get]
+func GetAnUserProfile() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		var params = mux.Vars(r)
@@ -188,6 +211,20 @@ func GetAUserProfile() http.HandlerFunc {
 	}
 }
 
+// LinkAPetToAUser example
+//
+//		@Summary		Link a created Pet to an User
+//		@Description	When creating a pet successfully, this functions link to the user that it created based on the JWT
+//		@ID				link-a-pet-to-user
+//		@Tags			User
+//		@Security 		jwt
+//		@Param        	petID   path   		string true  "Pet ID"
+//		@Produce		json
+//		@Success		200		{object}	responses.Response		"Pet linked successfuly"
+//		@Failure		401		{object}	responses.Response		"This pet has other owner!"
+//	 	@Failure		404		{object}	responses.Response		"User/Pet not found"
+//		@Failure		500		{object}	responses.Response		"Failure on the Server"
+//		@Router			/api/users/pet/{petID} [put]
 func LinkAPetToAUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)
@@ -238,6 +275,8 @@ func LinkAPetToAUser() http.HandlerFunc {
 	}
 }
 
+//TODO to change
+/*
 func CheckAuthenticatedUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -286,6 +325,7 @@ func CheckAuthenticatedUser() http.HandlerFunc {
 
 	}
 }
+*/
 
 func ChangePasswordOfAUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

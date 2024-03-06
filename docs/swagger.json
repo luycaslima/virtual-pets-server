@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This is the API for setting the REST functions of the Virtual Pets",
+        "description": "This is the API for setting the REST functions of the Virtual Pets, JWT in Swag has no good suppert . so sadly the AUTH is not working and need a migration",
         "title": "Virtual Pets",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
@@ -13,9 +13,14 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/api/users/login": {
+        "/api/pets": {
             "post": {
-                "description": "Login a  User with a Username and Password",
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
+                "description": "Creates a pet with a specific Species and a Name passed by the user",
                 "consumes": [
                     "application/json"
                 ],
@@ -23,10 +28,63 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "Pet"
                 ],
-                "summary": "Login a  User",
-                "operationId": "login-a-user",
+                "summary": "Create a Pet",
+                "operationId": "create-a-pet",
+                "parameters": [
+                    {
+                        "description": "Create a Pet",
+                        "name": "pet",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreatePetBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pet linked successfuly",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "This pet has other owner!",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User/Pet not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure on the Server",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/login": {
+            "post": {
+                "description": "Login an User with a Username and Password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Login an User",
+                "operationId": "login-an-user",
                 "parameters": [
                     {
                         "description": "Logs an User",
@@ -66,6 +124,86 @@
                 }
             }
         },
+        "/api/users/logout": {
+            "post": {
+                "description": "Logout current logged in user by expiring his Jwt auth",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Logout an User",
+                "operationId": "logout-an-user",
+                "responses": {
+                    "200": {
+                        "description": "Logout successfuly!",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure on the Server",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/pet/{petID}": {
+            "put": {
+                "security": [
+                    {
+                        "jwt": []
+                    }
+                ],
+                "description": "When creating a pet successfully, this functions link to the user that it created based on the JWT",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Link a created Pet to an User",
+                "operationId": "link-a-pet-to-user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pet ID",
+                        "name": "petID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pet linked successfuly",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "This pet has other owner!",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "User/Pet not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure on the Server",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/register": {
             "post": {
                 "description": "Register a new User with a Username, Email and Password",
@@ -76,7 +214,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "User"
                 ],
                 "summary": "Register a new User",
                 "operationId": "register-a-user",
@@ -87,7 +225,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.RegisterAnUserBody"
                         }
                     }
                 ],
@@ -112,9 +250,88 @@
                     }
                 }
             }
+        },
+        "/api/users/{username}": {
+            "get": {
+                "description": "Receives Details from a specific User (without password)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get an User Details (Profile)",
+                "operationId": "get-an-user-profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User's name",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User Details",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failure on the Server",
+                        "schema": {
+                            "$ref": "#/definitions/responses.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.CreatePetBody": {
+            "type": "object",
+            "required": [
+                "petName",
+                "specieID"
+            ],
+            "properties": {
+                "petName": {
+                    "type": "string"
+                },
+                "specieID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.RegisterAnUserBody": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "ronald@email.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "aksdmalknj@154/JKNJ"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ronald123"
+                }
+            }
+        },
         "models.User": {
             "description": "User represents the model  for an User's Data, password is ALWAYS HASHED",
             "type": "object",
@@ -129,7 +346,7 @@
                     "example": "ronald@email.com"
                 },
                 "id": {
-                    "description": "Users ID generated by Mongodb",
+                    "description": "Users ID generated by Mongodb\nIn: path",
                     "type": "string",
                     "example": "1"
                 },

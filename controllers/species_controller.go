@@ -53,6 +53,8 @@ func CreateASpecie() http.HandlerFunc {
 // TODO create a type form on the species
 func GetBabyFormSpecies() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		//TODO set cache control in all GETTERS
+		rw.Header().Set("Cache-Control", "max-age=3600")
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 		defer cancel()
 		var results []models.Specie

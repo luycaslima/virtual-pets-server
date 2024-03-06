@@ -16,14 +16,15 @@ import (
 
 // @title			Virtual Pets
 // @version		1.0
-// @description	This is the API for setting the REST functions of the Virtual Pets
+// @description	This is the API for setting the REST functions of the Virtual Pets, JWT in Swag has no good suppert . so sadly the AUTH is not working and need a migration
+// @in header
+// @name jwt
 // @termsOfService	http://swagger.io/terms/
 // @contact.name	API Support
 // @contact.email	lucasl22l@proton.me
 // @host			localhost:8080
 // @BasePath		/
 func main() {
-	//TODO this is  to allow any origin (just for the moment)
 	//TODO STUDY CORS
 	//https://stackoverflow.com/questions/40985920/making-golang-gorilla-cors-handler-work
 	//https://github.com/gofiber/fiber/issues/1411#issuecomment-869518111
@@ -34,7 +35,6 @@ func main() {
 	exposedHeader := handlers.ExposedHeaders([]string{"Origin"})
 	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE,OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"}) //TODO put this on production virtualpets.vercel.app but and the localhost?
-	cacheMaxAge := handlers.MaxAge(600)
 	//maxAge := handlers.MaxAge(12)
 	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
 
@@ -52,5 +52,5 @@ func main() {
 
 	/*handlers.AllowCredentials()*/
 	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, cacheMaxAge, origins)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, origins)(router)))
 }

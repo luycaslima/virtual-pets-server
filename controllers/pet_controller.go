@@ -16,6 +16,21 @@ import (
 
 var petCollection *mongo.Collection = configs.GetCollection(configs.DB, "pets")
 
+// CreateAPet example
+//
+//		@Summary		Create a Pet
+//		@Description	Creates a pet with a specific Species and a Name passed by the user
+//		@ID				create-a-pet
+//		@Tags			Pet
+//		@Security 		jwt
+//		@Accept			json
+//		@Param			pet		body		models.CreatePetBody 	true 	"Create a Pet"
+//		@Produce		json
+//		@Success		200		{object}	responses.Response		"Pet linked successfuly"
+//		@Failure		401		{object}	responses.Response		"This pet has other owner!"
+//	 	@Failure		404		{object}	responses.Response		"User/Pet not found"
+//		@Failure		500		{object}	responses.Response		"Failure on the Server"
+//		@Router			/api/pets [post]
 func CreateAPet() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		issuerContext := r.Context().Value(models.HttpContextStruct{}).(models.HttpContextStruct)

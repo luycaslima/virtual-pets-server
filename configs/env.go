@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Load the MONGODB Enviroment variable from the .env File
 func GetEnvMongoURI() string {
 	err := godotenv.Load(".env")
 	if err != nil {

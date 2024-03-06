@@ -8,10 +8,10 @@ import (
 
 func UserRoutes(router *mux.Router) {
 
-	router.HandleFunc("/api/users/register", controllers.RegisterAUser()).Methods("POST")
-	router.HandleFunc("/api/users/login", controllers.LoginAUser()).Methods("POST")
-	router.HandleFunc("/api/users/logout", controllers.LogoutAUser()).Methods("POST")
-	router.HandleFunc("/api/users/{username}", controllers.GetAUserProfile()).Methods("GET")
-	router.HandleFunc("/api/users", controllers.CheckAuthenticatedUser()).Methods("GET")
+	router.HandleFunc("/api/users/register", controllers.RegisterAnUser()).Methods("POST")
+	router.HandleFunc("/api/users/login", controllers.LoginAnUser()).Methods("POST")
+	router.HandleFunc("/api/users/logout", controllers.LogoutAnUser()).Methods("POST")
+	router.HandleFunc("/api/users/{username}", controllers.GetAnUserProfile()).Methods("GET")
+	//router.HandleFunc("/api/users", controllers.CheckAuthenticatedUser()).Methods("GET")
 	router.HandleFunc("/api/users/pet/{petID}", auth.ValidateJWT(controllers.LinkAPetToAUser())).Methods("PUT")
 }
