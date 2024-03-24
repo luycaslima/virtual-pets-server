@@ -2,55 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-
-	"github.com/luycaslima/virtual-pets-server/configs"
-	_ "github.com/luycaslima/virtual-pets-server/docs"
-	"github.com/luycaslima/virtual-pets-server/routes"
-	httpSwagger "github.com/swaggo/http-swagger"
+	"github.com/luycaslima/virtual-pets-server/database"
+	"github.com/luycaslima/virtual-pets-server/server"
 )
 
-// @title			Virtual Pets
-// @version		1.0
-// @description	This is the API for setting the REST functions of the Virtual Pets, JWT in Swag has no good suppert . so sadly the AUTH is not working and need a migration
-// @in header
-// @name jwt
-// @termsOfService	http://swagger.io/terms/
-// @contact.name	API Support
-// @contact.email	lucasl22l@proton.me
-// @host			localhost:8080
-// @BasePath		/
 func main() {
-	//TODO STUDY CORS
-	//https://stackoverflow.com/questions/40985920/making-golang-gorilla-cors-handler-work
-	//https://github.com/gofiber/fiber/issues/1411#issuecomment-869518111
-	//corsObj := handlers.AllowedOrigins([]string{"*"})
-	//credentials := handlers.AllowCredentials()
+	db := database.ConnectMongoDB()
 
-	headers := handlers.AllowedHeaders([]string{"Origin, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization,X-Requested-With"})
-	exposedHeader := handlers.ExposedHeaders([]string{"Origin"})
-	methods := handlers.AllowedMethods([]string{"GET,POST,PUT,DELETE,OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"*"}) //TODO put this on production virtualpets.vercel.app but and the localhost?
-	//maxAge := handlers.MaxAge(12)
-	//exposedHeaders := handlers.ExposedHeaders([]string{"Content-Length"})
+	muxServer := server.NewMuxServer(db.GetDb())
 
-	router := mux.NewRouter()
-	//run database
-	fmt.Println("Connecting Database")
-	configs.ConnectDB()
-
-	//Initialize routes
-	routes.SpeciesRoutes(router)
-	routes.PetRoutes(router)
-	routes.UserRoutes(router)
-
-	router.PathPrefix("/documentation/").Handler(httpSwagger.WrapHandler)
-
-	/*handlers.AllowCredentials()*/
-	//TODO SETUP CORS FOR OTHER DOMAINS
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, exposedHeader, methods, origins)(router)))
+	err := muxServer.StartServer(":8080")
+	if err != nil {
+		fmt.Println("Error starting server: ", err)
+	}
 }

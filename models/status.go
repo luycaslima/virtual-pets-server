@@ -1,6 +1,6 @@
 package models
 
-type Atributte int
+type Atributte uint
 
 type Strength Atributte
 type Life Atributte
@@ -10,10 +10,10 @@ type Agility Atributte
 type Intelligence Atributte
 
 type Status struct {
-	Strength     `json:"strength,omitempty" default:"0"`
-	Life         `json:"life,omitempty" default:"0"`
-	Defense      `json:"defense,omitempty" default:"0"`
-	Skill        `json:"skill,omitempty" default:"0"`
-	Agility      `json:"agility,omitempty" default:"0"`
-	Intelligence `json:"intelligence,omitempty" default:"0"`
+	Strength     `json:"strength,omitempty" `
+	Life         `json:"life,omitempty" `
+	Defense      `json:"defense,omitempty" `
+	Skill        `json:"skill,omitempty" `
+	Agility      `json:"agility,omitempty" `
+	Intelligence `json:"intelligence,omitempty" `
 }

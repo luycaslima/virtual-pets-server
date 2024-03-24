@@ -5,18 +5,20 @@ import (
 	"net/http"
 )
 
-// Strutcture of a Response
-type Response struct {
-	Status  int                    `json:"status"`
-	Message string                 `json:"message"`
-	Data    map[string]interface{} `json:"data"`
+type ResponseModel struct {
+	StatusCode int         `json:"statusCode"`
+	Success    bool        `json:"success"`
+	Message    string      `json:"message"`
+	Data       interface{} `json:"data"`
 }
 
-type PetResponse Response
-type UserResponse Response
-
-func EncodeResponse(rw http.ResponseWriter, statusCode int, message string, data map[string]interface{}) {
+func EncodeResponse(rw http.ResponseWriter, statusCode int, message string, success bool, data interface{}) {
 	rw.WriteHeader(statusCode)
-	response := Response{Status: statusCode, Message: message, Data: data}
+	response := ResponseModel{
+		StatusCode: statusCode,
+		Message:    message,
+		Success:    success,
+		Data:       data,
+	}
 	json.NewEncoder(rw).Encode(response)
 }

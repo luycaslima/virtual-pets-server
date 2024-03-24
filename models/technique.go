@@ -1,6 +1,6 @@
 package models
 
-type TechniqueRange int64
+type TechniqueRange uint
 
 const (
 	ShortDistance TechniqueRange = iota
